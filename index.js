@@ -14,9 +14,7 @@ app.post('/webhook',
   async (req, res) => {
     res.status(200).send('OK');
     let body;
-    try {
-      body = JSON.parse(req.body);
-    } catch(e) { return; }
+    try { body = JSON.parse(req.body); } catch(e) { return; }
 
     const events = body.events || [];
     for (const event of events) {
@@ -36,10 +34,11 @@ app.post('/webhook',
           })
         });
         const data = await r.json();
-        const reply = data.candidates[0].content.parts[0].text;
+        console.log('Gemini response:', JSON.stringify(data));
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，我現在無法回應，請稍後再試。';
         userHistory[uid].push({ role: 'model', parts: [{ text: reply }] });
         await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: reply }] });
-      } catch(e) { console.error(e); }
+      } catch(e) { console.error('Error:', e); }
     }
   }
 );
